@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
 
+import { sendMessage } from "@/app/lib/api";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,45 +122,19 @@ export default function Chat() {
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [selectedModel, setSelectedModel] = useState("None")
-  const [messages, setMessages] = useState<
-    Array<{ role: string; content: string }>
-  >([])
 
   const models = ["None", "llama3", "Sonnet 4.6"]
 
   const handleSendMessage = async () => {
     if (!message.trim()) return
-
-    setMessages((prev) => [...prev, { role: "user", content: message }])
-    setIsLoading(true)
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message, model: selectedModel }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setMessages((prev) => [...prev, { role: "ai", content: data.reply }])
-        setMessage("")
-      } else {
-        console.error("Failed to send message:", response.statusText)
-      }
-    } catch (error) {
-      console.error("Error sending message:", error)
-    } finally {
-      setIsLoading(false)
-    }
+    const result = await sendMessage(message, selectedModel)
+    console.log(result)
+    setMessage("")
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
+  const handleKeyDown = (kbevent: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (kbevent.key === "Enter" && !kbevent.shiftKey) {
+      kbevent.preventDefault()
       handleSendMessage()
     }
   }
