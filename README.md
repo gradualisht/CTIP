@@ -1,9 +1,5 @@
 ### CTIP
 
-
-
-
-
 # Credits
 
 Authors: Gradualisht & lephorx
@@ -19,6 +15,7 @@ npm dev
 ```
 
 ### Usage with pnpm (Recommanded)
+
 ```bash
 cd frontend
 pnpm install
@@ -30,6 +27,6 @@ Interface available at localhsot:8000
 ## Initialization backend
 
 ```bash
-cd backend
+cd backend/app
 python3 main.py
 ```
