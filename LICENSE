@@ -1,0 +1,84 @@
+# Non-Commercial Source License (NCSL) v1.0
+
+Copyright (c) 2026 brz_liq / Lephor
+
+## Definitions
+
+**"Software"** means the source code, compiled forms, documentation, and all associated
+files in this repository, including the web application frontend and backend services.
+
+**"Commercial Use"** means any use of the Software, or any substantial portion thereof,
+intended for or resulting in commercial advantage or monetary compensation, including
+but not limited to:
+- Offering the Software as a hosted service (SaaS) to third parties
+- Selling, licensing, or sublicensing the Software
+- Using the Software in a product or service for which a fee is charged
+- Using the Software to provide paid consulting, development, or support services
+
+**"Marketing Use"** means using the Software, or any derivative work, to attract customers,
+generate leads, or promote any commercial product or service.
+
+**"You"** means any individual or legal entity exercising rights under this License.
+
+---
+
+## Grant of Rights
+
+Subject to the terms and conditions of this License, the copyright holders grant You
+a worldwide, royalty-free, non-exclusive, non-sublicensable license to:
+
+1. **Use** — Run the Software for personal, educational, or internal non-commercial purposes.
+2. **Study** — Examine and learn from the source code.
+3. **Modify** — Create derivative works for personal or non-commercial use.
+4. **Distribute** — Share the Software or derivative works, provided this License is
+   included and all conditions below are met.
+
+---
+
+## Restrictions
+
+You may **not**, under any circumstance:
+
+1. **Commercialise** — Use the Software or any derivative for Commercial Use.
+2. **Market** — Use the Software or any derivative for Marketing Use.
+3. **Resell** — Sell, sublicense, rent, lease, or transfer the Software or access to it.
+4. **Offer as a Service** — Host or deploy the Software as a managed service available
+   to third parties, whether for free or for payment, without prior written permission
+   from the copyright holders.
+5. **Remove Notices** — Remove or alter any copyright, trademark, or attribution
+   notices present in the Software.
+6. **Misrepresent Origin** — Claim that You created the original Software, or present
+   the Software as Your own proprietary product.
+
+---
+
+## Distribution Conditions
+
+If You distribute the Software or a derivative work, You must:
+
+- Include this License in its entirety.
+- Clearly indicate any modifications You have made.
+- Not impose additional restrictions on recipients beyond those in this License.
+
+---
+
+## Contributions
+
+Any contribution intentionally submitted to this project is licensed under this same
+License unless explicitly agreed otherwise in writing with the copyright holders.
+
+---
+
+## No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+---
+
+## Governing Law
+
+This License shall be governed by and construed in accordance with the laws of
+Switzerland, Canton of Zurich, without regard to conflict of law provisions.
