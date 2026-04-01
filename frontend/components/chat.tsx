@@ -1,4 +1,5 @@
-import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { ChevronUp } from "lucide-react"
 
 const styles = `
   .chat-container {
@@ -12,27 +13,50 @@ const styles = `
 
   .chat-input-wrapper {
     width: 100%;
-    max-width: 28rem;
+    max-width: 48rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #1e293b;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
   }
 
   .chat-input {
-    border-radius: 0.5rem;
-    border: 1px solid #334155;
-    background-color: #1e293b;
-    padding: 0.75rem 1rem;
+    flex: 1;
+    border: none;
+    background: transparent;
     color: #ffffff;
     font-size: 1rem;
-    transition: all 0.2s;
-  }
-
-  .chat-input::placeholder {
-    color: #94a3b8;
+    outline: none;
   }
 
   .chat-input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: none;
+  }
+
+  .chat-input::placeholder {
+    color: #64748b;
+  }
+
+  .chat-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: #334155;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.25rem;
+  }
+
+  .chat-button:hover {
+    background-color: #475569;
   }
 `
 
@@ -42,7 +66,10 @@ export default function Chat() {
       <style>{styles}</style>
       <div className="chat-container">
         <div className="chat-input-wrapper">
-          <Input placeholder="Type a message..." className="chat-input" />
+          <Textarea placeholder="Send a message" className="chat-input" />
+          <button className="chat-button">
+            <ChevronUp />
+          </button>
         </div>
       </div>
     </>
