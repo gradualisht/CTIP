@@ -22,11 +22,13 @@ pnpm install
 pnpm dev
 ```
 
-Interface available at localhsot:8000
+Interface accessible at https://localhost:3000
 
 ## Initialization backend
 
 ```bash
-cd backend/app
-python3 main.py
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
+
+Interface accessible at http://localhost:8000/docs
