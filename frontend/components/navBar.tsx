@@ -1,7 +1,7 @@
 'use client'
 import ChatList from "./chatList"
 import { Home, Plus, Settings } from "lucide-react"
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 const styles = `
   .nav-bar {
@@ -126,6 +126,9 @@ const styles = `
 
 export default function NavBar() {
   const router = useRouter()
+  const pathname = usePathname()
+
+  const homeIsActive = pathname === `/`
   return (
     <>
       <style>{styles}</style>
@@ -141,7 +144,7 @@ export default function NavBar() {
 
         <div className="nav-content">
           <div className="nav-section">
-            <button className="nav-item active">
+            <button className={`nav-item ${homeIsActive ? 'active' : ''}`} onClick={() => router.push('/')}>
               <Home size={18} />
               <span>Home</span>
             </button>

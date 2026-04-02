@@ -3,9 +3,7 @@
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
-
 import { sendMessage } from "@/app/lib/api"
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +12,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+export type Message = {
+  id: number
+  role: 'user' | 'assistant'
+  content: string
+}
+
 const styles = `
   .chat-container {
     display: flex;
-    height: 100vh;
-    width: 100vw;
     align-items: center;
     justify-content: center;
     background-color: #0f172a;
+    width: 100%;        /* add this */
+    padding: 1.5rem;    /* add this */
   }
 
   .chat-wrapper {
@@ -118,7 +122,7 @@ const styles = `
   }
 `
 
-export default function Chat() {
+export default function Chat({ onSend }: { onSend: (msg: Message) => void }) {
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile")
@@ -130,10 +134,18 @@ export default function Chat() {
   ]
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return
+    if (!message.trim() || isLoading) return
+
+    setIsLoading(true)
+
+    onSend({ id: Date.now(), role: 'user', content: message })
+
     const result = await sendMessage(message, selectedModel)
-    console.log(result)
+
+    onSend({ id: Date.now() + 1, role: 'assistant', content: result.response })
+
     setMessage("")
+    setIsLoading(false)
   }
 
   const handleKeyDown = (kbevent: React.KeyboardEvent<HTMLTextAreaElement>) => {

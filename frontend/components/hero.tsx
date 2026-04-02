@@ -1,8 +1,19 @@
-import { Button } from "@/components/ui/button"
+'use client'
+
 import Chat from "@/components/chatInput"
 
 export default function Hero() {
   return (
-      <Chat />
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      width: '100%',
+      backgroundColor: '#0f172a',
+    }}>
+      <Chat onSend={() => {}} />
+    </div>
   )
 }
