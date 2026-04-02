@@ -7,7 +7,7 @@ class MessageRequest(BaseModel):
     message: str
     model: str
 
-@router.get("/health")
+@router.get("/health")  
 def health_check():
     return {"status": "ok"}
 
