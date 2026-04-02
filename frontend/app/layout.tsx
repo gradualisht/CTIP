@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
+import Navbar from "@/components/navBar"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -27,8 +28,11 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="flex h-screen overflow-hidden">
+        <Navbar />
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
       </body>
     </html>
   )

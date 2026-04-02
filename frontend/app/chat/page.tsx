@@ -6,7 +6,7 @@ import Hero from "@/components/hero"
 export default function Page() {
   return (
     <div className="flex h-full w-full">
-      <Hero />
+        <Chat />
     </div>
   )
 }

@@ -1,5 +1,7 @@
+'use client'
 import ChatList from "./chatList"
 import { Home, Plus, Settings } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 const styles = `
   .nav-bar {
@@ -123,12 +125,15 @@ const styles = `
 `
 
 export default function NavBar() {
+  const router = useRouter()
   return (
     <>
       <style>{styles}</style>
       <div className="nav-bar">
         <div className="nav-header">
-          <h1>CTIP</h1>
+          <button onClick={() => router.push('/')}>
+            <h1>CTIP</h1>
+          </button>
           <button className="nav-new-chat">
             <Plus size={18} />
           </button>
