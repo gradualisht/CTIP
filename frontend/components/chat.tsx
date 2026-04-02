@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
 
-import { sendMessage } from "@/app/lib/api";
+import { sendMessage } from "@/app/lib/api"
 
 import {
   DropdownMenu,
@@ -121,9 +121,13 @@ const styles = `
 export default function Chat() {
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedModel, setSelectedModel] = useState("None")
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile")
 
-  const models = ["None", "llama3", "Sonnet 4.6"]
+  const models = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+  ]
 
   const handleSendMessage = async () => {
     if (!message.trim()) return

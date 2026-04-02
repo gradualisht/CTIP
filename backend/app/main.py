@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import service
 
+
+
 app = FastAPI()
 
 app.add_middleware(
