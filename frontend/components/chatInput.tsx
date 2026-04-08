@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
 import { sendMessage } from "@/app/lib/api"
+import { appendConversationToChat } from "@/app/lib/chat-storage"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +15,12 @@ import {
 
 export type Message = {
   id: number
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
+}
+
+type ConversationCompletePayload = {
+  chatId: string
 }
 
 const styles = `
@@ -122,10 +127,22 @@ const styles = `
   }
 `
 
-export default function Chat({ onSend }: { onSend: (msg: Message) => void }) {
+export default function Chat({
+  onSend,
+  onConversationComplete,
+  chatId,
+  initialModel,
+}: {
+  onSend: (msg: Message) => void
+  onConversationComplete?: (payload: ConversationCompletePayload) => void
+  chatId?: string
+  initialModel?: string
+}) {
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile")
+  const [selectedModel, setSelectedModel] = useState(
+    initialModel ?? "llama-3.3-70b-versatile"
+  )
 
   const models = [
     "llama-3.3-70b-versatile",
@@ -136,16 +153,40 @@ export default function Chat({ onSend }: { onSend: (msg: Message) => void }) {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return
 
+    const userMessageContent = message.trim()
+    const userMessage = {
+      id: Date.now(),
+      role: "user" as const,
+      content: userMessageContent,
+    }
+
     setIsLoading(true)
 
-    onSend({ id: Date.now(), role: 'user', content: message })
+    try {
+      onSend(userMessage)
 
-    const result = await sendMessage(message, selectedModel)
+      const result = await sendMessage(userMessageContent, selectedModel)
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: "assistant" as const,
+        content: result.response,
+      }
 
-    onSend({ id: Date.now() + 1, role: 'assistant', content: result.response })
+      onSend(assistantMessage)
 
-    setMessage("")
-    setIsLoading(false)
+      const chat = appendConversationToChat({
+        chatId,
+        userMessage,
+        assistantMessage,
+        model: selectedModel,
+      })
+
+      onConversationComplete?.({ chatId: chat.id })
+
+      setMessage("")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleKeyDown = (kbevent: React.KeyboardEvent<HTMLTextAreaElement>) => {
