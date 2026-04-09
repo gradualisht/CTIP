@@ -3,8 +3,12 @@
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronUp, ChevronDown } from "lucide-react"
-import { sendMessage } from "@/app/lib/api"
-import { appendConversationToChat } from "@/app/lib/chat-storage"
+import { createChatApi, appendMessageApi } from "@/app/lib/api"
+import {
+  optimisticallyAddOrUpdateChat,
+  getChat,
+  mapApiChat,
+} from "@/app/lib/chat-storage"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +33,8 @@ const styles = `
     align-items: center;
     justify-content: center;
     background-color: #0f172a;
-    width: 100%;        /* add this */
-    padding: 1.5rem;    /* add this */
+    width: 100%;
+    padding: 1.5rem;
   }
 
   .chat-wrapper {
@@ -130,11 +134,13 @@ const styles = `
 export default function Chat({
   onSend,
   onConversationComplete,
+  onThinking,
   chatId,
   initialModel,
 }: {
   onSend: (msg: Message) => void
   onConversationComplete?: (payload: ConversationCompletePayload) => void
+  onThinking?: (thinking: boolean) => void
   chatId?: string
   initialModel?: string
 }) {
@@ -154,39 +160,59 @@ export default function Chat({
     if (!message.trim() || isLoading) return
 
     const userMessageContent = message.trim()
-    const userMessage = {
-      id: Date.now(),
-      role: "user" as const,
-      content: userMessageContent,
-    }
-
+    setMessage("")
     setIsLoading(true)
 
-    try {
-      onSend(userMessage)
-
-      const result = await sendMessage(userMessageContent, selectedModel)
-      const assistantMessage = {
-        id: Date.now() + 1,
-        role: "assistant" as const,
-        content: result.response,
+    if (chatId) {
+      // ── Existing chat: append message ──────────────────────────────────────
+      const tempUserMsg: Message = {
+        id: Date.now(),
+        role: "user",
+        content: userMessageContent,
       }
+      onSend(tempUserMsg)
+      onThinking?.(true)
 
-      onSend(assistantMessage)
+      try {
+        const result = await appendMessageApi(
+          chatId,
+          userMessageContent,
+          selectedModel
+        )
+        onThinking?.(false)
 
-      const chat = appendConversationToChat({
-        chatId,
-        userMessage,
-        assistantMessage,
-        model: selectedModel,
-      })
+        const assistantMsg: Message = {
+          id: result.assistant_message.id,
+          role: "assistant",
+          content: result.assistant_message.content,
+        }
+        onSend(assistantMsg)
 
-      onConversationComplete?.({ chatId: chat.id })
-
-      setMessage("")
-    } finally {
-      setIsLoading(false)
+        // Update sidebar chat title/timestamp without full re-render
+        const existing = getChat(chatId)
+        if (existing) {
+          optimisticallyAddOrUpdateChat({
+            ...existing,
+            updatedAt: result.updated_at,
+          })
+        }
+      } catch (err) {
+        onThinking?.(false)
+        throw err
+      }
+    } else {
+      // ── New chat: create via backend ───────────────────────────────────────
+      try {
+        const chat = await createChatApi(userMessageContent, selectedModel)
+        const record = mapApiChat(chat)
+        optimisticallyAddOrUpdateChat(record)
+        onConversationComplete?.({ chatId: chat.id })
+      } catch (err) {
+        throw err
+      }
     }
+
+    setIsLoading(false)
   }
 
   const handleKeyDown = (kbevent: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -246,3 +272,4 @@ export default function Chat({
     </>
   )
 }
+

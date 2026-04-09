@@ -1,185 +1,80 @@
 import type { ChatMessage, ChatRecord } from "./chat-types"
+import type { ApiChat, ApiChatSummary } from "./api"
 
-const STORAGE_KEY = "ctip.chat-sessions"
-const listeners = new Set<() => void>()
-const EMPTY_CHATS: ChatRecord[] = []
+// null  → not yet loaded (show skeletons)
+// []    → loaded, no chats yet
+// [...] → loaded with data
 let cachedChats: ChatRecord[] | null = null
 
-function createChatId() {
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
-  ) {
-    return crypto.randomUUID()
-  }
+const listeners = new Set<() => void>()
 
-  return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+function notify() {
+  listeners.forEach((l) => l())
 }
 
-function createChatTitle(message: string) {
-  const compactMessage = message.trim().replace(/\s+/g, " ")
-
-  if (compactMessage.length <= 32) {
-    return compactMessage || "New chat"
-  }
-
-  return `${compactMessage.slice(0, 29)}...`
+function sortByUpdated(chats: ChatRecord[]) {
+  return [...chats].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 }
 
-function sortChats(chats: ChatRecord[]) {
-  return [...chats].sort((left, right) =>
-    right.updatedAt.localeCompare(left.updatedAt)
-  )
-}
+// ── mappers ───────────────────────────────────────────────────────────────────
 
-function readChats() {
-  if (cachedChats) {
-    return cachedChats
-  }
-
-  if (typeof window === "undefined") {
-    cachedChats = EMPTY_CHATS
-    return cachedChats
-  }
-
-  try {
-    const rawChats = window.localStorage.getItem(STORAGE_KEY)
-
-    if (!rawChats) {
-      cachedChats = EMPTY_CHATS
-      return cachedChats
-    }
-
-    const parsedChats = JSON.parse(rawChats) as ChatRecord[]
-    cachedChats = Array.isArray(parsedChats)
-      ? sortChats(parsedChats)
-      : EMPTY_CHATS
-    return cachedChats
-  } catch {
-    cachedChats = EMPTY_CHATS
-    return cachedChats
+export function mapApiChatSummary(c: ApiChatSummary): ChatRecord {
+  return {
+    id: c.id,
+    title: c.title,
+    model: c.model,
+    messages: [],
+    createdAt: c.created_at,
+    updatedAt: c.updated_at,
   }
 }
 
-function writeChats(chats: ChatRecord[]) {
-  if (typeof window === "undefined") {
-    return
+export function mapApiChat(c: ApiChat): ChatRecord {
+  return {
+    id: c.id,
+    title: c.title,
+    model: c.model,
+    messages: c.messages.map(
+      (m): ChatMessage => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+      })
+    ),
+    createdAt: c.created_at,
+    updatedAt: c.updated_at,
   }
-
-  cachedChats = sortChats(chats)
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cachedChats))
-  listeners.forEach((listener) => listener())
 }
+
+// ── store API ─────────────────────────────────────────────────────────────────
 
 export function subscribeToChats(listener: () => void) {
   listeners.add(listener)
-
-  return () => {
-    listeners.delete(listener)
-  }
+  return () => listeners.delete(listener)
 }
 
-export function listChats() {
-  return readChats()
+/** Returns null when chats haven't been fetched yet (show skeletons). */
+export function listChats(): ChatRecord[] | null {
+  return cachedChats
 }
 
-export function getChat(chatId: string) {
-  return readChats().find((chat) => chat.id === chatId) ?? null
+export function getChat(chatId: string): ChatRecord | null {
+  return cachedChats?.find((c) => c.id === chatId) ?? null
 }
 
-export function upsertChat(chat: ChatRecord) {
-  const remainingChats = readChats().filter(
-    (existingChat) => existingChat.id !== chat.id
-  )
-  const nextChats = sortChats([chat, ...remainingChats])
-
-  writeChats(nextChats)
-  return chat
+export function setChats(chats: ChatRecord[]) {
+  cachedChats = sortByUpdated(chats)
+  notify()
 }
 
-export function createChatFromConversation({
-  message,
-  model,
-  response,
-}: {
-  message: string
-  model: string
-  response: string
-}) {
-  const now = new Date().toISOString()
-  const chat: ChatRecord = {
-    id: createChatId(),
-    title: createChatTitle(message),
-    model,
-    messages: [
-      { id: Date.now(), role: "user", content: message },
-      { id: Date.now() + 1, role: "assistant", content: response },
-    ],
-    createdAt: now,
-    updatedAt: now,
-  }
-
-  writeChats([chat, ...readChats()])
-  return chat
+export function optimisticallyAddOrUpdateChat(chat: ChatRecord) {
+  const others = (cachedChats ?? []).filter((c) => c.id !== chat.id)
+  cachedChats = sortByUpdated([chat, ...others])
+  notify()
 }
 
-export function appendConversationToChat({
-  chatId,
-  userMessage,
-  assistantMessage,
-  model,
-}: {
-  chatId?: string
-  userMessage: ChatMessage
-  assistantMessage: ChatMessage
-  model: string
-}) {
-  const existingChat = chatId ? getChat(chatId) : null
-  const now = new Date().toISOString()
-
-  const chat: ChatRecord = {
-    id: existingChat?.id ?? chatId ?? createChatId(),
-    title: createChatTitle(existingChat?.title || userMessage.content),
-    model,
-    messages: existingChat
-      ? [...existingChat.messages, userMessage, assistantMessage]
-      : [userMessage, assistantMessage],
-    createdAt: existingChat?.createdAt ?? now,
-    updatedAt: now,
-  }
-
-  upsertChat(chat)
-  return chat
-}
-
-export function saveChatState({
-  chatId,
-  messages,
-  model,
-  title,
-}: {
-  chatId: string
-  messages: ChatMessage[]
-  model: string
-  title?: string
-}) {
-  const existingChat = getChat(chatId)
-  const now = new Date().toISOString()
-  const resolvedTitle =
-    title ||
-    existingChat?.title ||
-    messages.find((message) => message.role === "user")?.content ||
-    "New chat"
-
-  const chat: ChatRecord = {
-    id: chatId,
-    title: createChatTitle(resolvedTitle),
-    model,
-    messages,
-    createdAt: existingChat?.createdAt ?? now,
-    updatedAt: now,
-  }
-
-  upsertChat(chat)
-  return chat
+export function optimisticallyRemoveChat(chatId: string) {
+  if (!cachedChats) return
+  cachedChats = cachedChats.filter((c) => c.id !== chatId)
+  notify()
 }
