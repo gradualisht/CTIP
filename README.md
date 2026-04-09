@@ -28,6 +28,18 @@ Interface accessible at https://localhost:3000
 
 ```bash
 cd backend
+pip install -r requirements.txt
+```
+
+Set up the database (run once):
+
+```bash
+python setup_db.py
+```
+
+Start the server:
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 

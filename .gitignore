@@ -8,7 +8,6 @@ __pycache__/
 *.so
 *.egg-info/
 .eggs/
-.env
 .venv/
 venv/
 ENV/
@@ -18,28 +17,55 @@ pip-wheel-metadata/
 .coverage
 htmlcov/
 .mypy_cache/
-ruff_cache/
+.ruff_cache/
 
 # ======================
-# React / Node
+# SQLite databases
+# ======================
+*.db
+*.db-shm
+*.db-wal
+
+# ======================
+# React / Next.js / Node
 # ======================
 node_modules/
+.next/
+out/
+build/
+dist/
+.cache/
+.vite/
+*.tsbuildinfo
+next-env.d.ts
+
+# ======================
+# Package manager debug logs
+# ======================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-dist/
-build/
-.cache/
-.vite/
 
 # ======================
-# IDEs & Editors
+# Yarn
+# ======================
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ======================
+# IDEs and Editors
 # ======================
 .vscode/
 .idea/
 *.swp
 *.swo
+*.swa
 
 # ======================
 # OS files
@@ -56,7 +82,13 @@ logs/
 # ======================
 # Environment / Secrets
 # ======================
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# ======================
+# Certificates
+# ======================
+*.pem
