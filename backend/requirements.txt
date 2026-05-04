@@ -2,5 +2,5 @@ fastapi
 pydantic
 uvicorn
 python-dotenv
-pydantic-ai
+pydantic-ai>=1.0.0
 sqlalchemy
