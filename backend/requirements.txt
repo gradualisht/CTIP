@@ -4,3 +4,6 @@ uvicorn
 python-dotenv
 pydantic-ai>=1.0.0
 sqlalchemy
+httpx
+pytest
+pytest-mock
