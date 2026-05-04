@@ -5,6 +5,13 @@ import os
 import uuid
 from datetime import datetime, timezone
 from pydantic_ai import Agent
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    UserPromptPart,
+    TextPart,
+)
 from dotenv import load_dotenv
 from pathlib import Path
 from app.db.database import get_db
@@ -51,7 +58,17 @@ def _resolve_model(raw_model: str) -> str:
     return f"groq:{selected}"
 
 
-def _run_agent(model_name: str, message: str) -> str:
+def _build_message_history(chat) -> list[ModelMessage]:
+    history = []
+    for m in chat.messages:
+        if m.role == "user":
+            history.append(ModelRequest(parts=[UserPromptPart(content=m.content)]))
+        elif m.role == "assistant":
+            history.append(ModelResponse(parts=[TextPart(content=m.content)]))
+    return history
+
+
+def _run_agent(model_name: str, message: str, history: list[ModelMessage] | None = None) -> str:
     if not os.getenv("GROQ_API_KEY"):
         raise HTTPException(
             status_code=500,
@@ -59,7 +76,7 @@ def _run_agent(model_name: str, message: str) -> str:
         )
     agent = Agent(model=model_name)
     try:
-        result = agent.run_sync(message)
+        result = agent.run_sync(message, message_history=history or [])
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Model call failed: {exc}") from exc
     return result.output
@@ -143,7 +160,7 @@ def list_chats(db: Session = Depends(get_db)):
 @router.post("/chats", status_code=201)
 def create_chat(req: CreateChatRequest, db: Session = Depends(get_db)):
     model_name = _resolve_model(req.model)
-    ai_response = _run_agent(model_name, req.message)
+    ai_response = _run_agent(model_name, req.message, history=None)
 
     now = _now_iso()
     chat = Chat(
@@ -181,7 +198,8 @@ def append_message(chat_id: str, req: AppendMessageRequest, db: Session = Depend
         raise HTTPException(status_code=404, detail="Chat not found")
 
     model_name = _resolve_model(req.model)
-    ai_response = _run_agent(model_name, req.message)
+    history = _build_message_history(chat)
+    ai_response = _run_agent(model_name, req.message, history=history)
 
     now = _now_iso()
     user_msg = Message(chat_id=chat_id, role="user", content=req.message, created_at=now)
